@@ -19,13 +19,11 @@ public class Main {
 		
 	
 		
-		
-		
 		window.setLocationRelativeTo(window); //window set at the center of screen
 		window.setVisible(true);
 		
-		
-//		gamePanel.StartGameThread();
+//		Checks if the game loop is running
+		gamePanel.StartGameThread();
 	}
 
 }

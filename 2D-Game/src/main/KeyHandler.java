@@ -17,22 +17,22 @@ public class KeyHandler implements KeyListener
 	@Override
 	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
-		int src = e.getKeyCode(); //Check the specidif keyKode
+		int code = e.getKeyCode(); //Check the specidif keyKode
 		
-		if (src == KeyEvent.VK_W)
+		if (code == KeyEvent.VK_W)
 		{
 			upPressed = true;
 			
 		}
-		if (src == KeyEvent.VK_S)
+		if (code == KeyEvent.VK_S)
 		{
 			downPressed = true;
 		}
-		if (src == KeyEvent.VK_A)
+		if (code == KeyEvent.VK_A)
 		{
 			leftPressed = true;
 		}
-		if (src == KeyEvent.VK_D)
+		if (code == KeyEvent.VK_D)
 		{
 			rightPressed = true;
 		}
@@ -42,20 +42,20 @@ public class KeyHandler implements KeyListener
 	@Override
 	public void keyReleased(KeyEvent e) {
 
-		int src = e.getKeyCode();
-		if (src == KeyEvent.VK_W)
+		int code = e.getKeyCode();
+		if (code == KeyEvent.VK_W)
 		{
 			upPressed = false;
 		}
-		if (src == KeyEvent.VK_S)
+		if (code == KeyEvent.VK_S)
 		{
 			downPressed = false;
 		}
-		if (src == KeyEvent.VK_A)
+		if (code == KeyEvent.VK_A)
 		{
 			leftPressed = false;
 		}
-		if (src == KeyEvent.VK_D)
+		if (code == KeyEvent.VK_D)
 		{
 			rightPressed = false;
 		}
