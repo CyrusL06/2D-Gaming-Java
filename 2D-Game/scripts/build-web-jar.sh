@@ -7,7 +7,7 @@ BUILD_DIR="$ROOT_DIR/.build/web-jar"
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR" "$ROOT_DIR/web"
 
-javac -d "$BUILD_DIR" $(find "$ROOT_DIR/src" -name "*.java")
+javac --release 17 -d "$BUILD_DIR" $(find "$ROOT_DIR/src" -name "*.java")
 
 if [ -d "$ROOT_DIR/res" ]; then
   cp -R "$ROOT_DIR/res/"* "$BUILD_DIR"/

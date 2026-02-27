@@ -32,7 +32,14 @@
       status.remove();
     } catch (err) {
       console.error(err);
-      status.textContent = "Failed to start. Check console.";
+      const message = String(err && err.message ? err.message : err);
+      if (message.includes("Range")) {
+        status.textContent = "Failed: server must support HTTP Range (206) for 2d-game.jar.";
+      } else if (message.includes("Java version") || message.includes("supports up to Java 17")) {
+        status.textContent = "Failed: rebuild web/2d-game.jar with Java 17 target.";
+      } else {
+        status.textContent = "Failed to start. Check console.";
+      }
     }
   </script>
 </body>
