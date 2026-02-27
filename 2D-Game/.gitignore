@@ -1,1 +1,6 @@
 /bin/
+/out/
+/out_plan/
+/.build/
+/2d-game-plan.jar
+/hs_err_pid*.log
