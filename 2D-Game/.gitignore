@@ -4,3 +4,4 @@
 /.build/
 /2d-game-plan.jar
 /hs_err_pid*.log
+/webswing/apps/*.jar

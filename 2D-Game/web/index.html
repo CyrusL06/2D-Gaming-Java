@@ -3,44 +3,191 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2D Adventure (Browser)</title>
-  <script src="https://cjrtnc.leaningtech.com/4.2/loader.js"></script>
+  <title>2D Adventure (Canvas Test)</title>
   <style>
-    html, body { margin: 0; height: 100%; background: #0b0b0b; color: #f5f5f5; font-family: sans-serif; }
-    #container { width: 100vw; height: 100svh; }
-    #status { position: fixed; top: 10px; left: 10px; padding: 6px 10px; background: rgba(0,0,0,.6); border: 1px solid #333; border-radius: 6px; font-size: 12px; }
+    :root {
+      --bg: #0a0a0a;
+      --panel: #151515;
+      --text: #f5f5f5;
+      --muted: #a3a3a3;
+      --border: #2a2a2a;
+    }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: radial-gradient(120% 120% at 20% 0%, #202020 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+    .layout {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .panel {
+      width: min(100%, 1100px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #1b1b1b 0%, var(--panel) 100%);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .header strong {
+      letter-spacing: 0.4px;
+    }
+    .header span {
+      color: var(--muted);
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #000;
+      image-rendering: pixelated;
+    }
+    .hint {
+      padding: 8px 14px 12px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
-  <div id="status">Loading...</div>
-  <div id="container"></div>
+  <div class="layout">
+    <main class="panel">
+      <div class="header">
+        <strong>2D Adventure (Browser Test)</strong>
+        <span id="status">Loading sprites...</span>
+      </div>
+      <canvas id="game" width="2048" height="1536" aria-label="Game screen"></canvas>
+      <div class="hint">Controls: W A S D</div>
+    </main>
+  </div>
 
   <script type="module">
-    const status = document.getElementById("status");
-    const container = document.getElementById("container");
+    const statusEl = document.getElementById("status");
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-    try {
-      status.textContent = "Initializing Java runtime...";
-      await cheerpjInit();
+    const originalTileSize = 16;
+    const scale = 8;
+    const tileSize = originalTileSize * scale;
+    const maxScreenCol = 16;
+    const maxScreenRow = 12;
 
-      status.textContent = "Creating display...";
-      cheerpjCreateDisplay(-1, -1, container);
+    canvas.width = tileSize * maxScreenCol;
+    canvas.height = tileSize * maxScreenRow;
 
-      status.textContent = "Starting game...";
-      await cheerpjRunJar("/app/2d-game.jar");
+    const state = {
+      keys: { up: false, down: false, left: false, right: false },
+      player: { x: 100, y: 100, speed: 4, direction: "down" },
+      sprites: {},
+      spriteReady: false,
+    };
 
-      status.remove();
-    } catch (err) {
-      console.error(err);
-      const message = String(err && err.message ? err.message : err);
-      if (message.includes("Range")) {
-        status.textContent = "Failed: server must support HTTP Range (206) for 2d-game.jar.";
-      } else if (message.includes("Java version") || message.includes("supports up to Java 17")) {
-        status.textContent = "Failed: rebuild web/2d-game.jar with Java 17 target.";
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load ${src}`));
+        img.src = src;
+      });
+    }
+
+    async function loadSprites() {
+      const map = {
+        up: "player/g-2.png",
+        right: "player/g-3.png",
+        left: "player/g-4.png",
+        down: "player/g-1.png",
+      };
+      const entries = await Promise.all(
+        Object.entries(map).map(async ([direction, path]) => [direction, await loadImage(path)])
+      );
+      state.sprites = Object.fromEntries(entries);
+      state.spriteReady = true;
+      statusEl.textContent = "Running";
+    }
+
+    function onKeyChange(code, pressed) {
+      if (code === "KeyW") state.keys.up = pressed;
+      if (code === "KeyS") state.keys.down = pressed;
+      if (code === "KeyA") state.keys.left = pressed;
+      if (code === "KeyD") state.keys.right = pressed;
+    }
+
+    window.addEventListener("keydown", (e) => onKeyChange(e.code, true));
+    window.addEventListener("keyup", (e) => onKeyChange(e.code, false));
+
+    function update() {
+      const p = state.player;
+      if (state.keys.up) {
+        p.direction = "up";
+        p.y -= p.speed;
+      } else if (state.keys.down) {
+        p.direction = "down";
+        p.y += p.speed;
+      } else if (state.keys.left) {
+        p.direction = "left";
+        p.x -= p.speed;
+      } else if (state.keys.right) {
+        p.direction = "right";
+        p.x += p.speed;
+      }
+
+      p.x = Math.max(0, Math.min(canvas.width - tileSize, p.x));
+      p.y = Math.max(0, Math.min(canvas.height - tileSize, p.y));
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const p = state.player;
+      if (state.spriteReady && state.sprites[p.direction]) {
+        ctx.drawImage(state.sprites[p.direction], p.x, p.y, tileSize, tileSize);
       } else {
-        status.textContent = "Failed to start. Check console.";
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(p.x, p.y, tileSize, tileSize);
       }
     }
+
+    let previous = performance.now();
+    let accumulator = 0;
+    const step = 1000 / 100;
+
+    function loop(now) {
+      const frame = Math.min(100, now - previous);
+      previous = now;
+      accumulator += frame;
+
+      while (accumulator >= step) {
+        update();
+        accumulator -= step;
+      }
+
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    loadSprites()
+      .catch((error) => {
+        console.error(error);
+        statusEl.textContent = "Sprite load failed (using fallback rectangle)";
+      })
+      .finally(() => requestAnimationFrame(loop));
   </script>
 </body>
 </html>
