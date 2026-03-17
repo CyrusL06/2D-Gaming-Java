@@ -28,7 +28,17 @@ public class TileManager {
 	}
 	
 	
+	
+	
 	//Method
+	
+	
+	public void collision() {
+		
+	}
+	
+	
+	
 	public void getTileImage() {
 		
 		try {
@@ -41,6 +51,13 @@ public class TileManager {
 			
 			tile[2] = new Tile();
 			tile[2].image = ImageIO.read(getClass().getResourceAsStream("/tiles/water01.png"));
+			
+			tile[3] = new Tile();
+			tile[3].image = ImageIO.read(getClass().getResourceAsStream("/tiles/earth.png"));
+			
+			tile[4] = new Tile();
+			tile[4].image = ImageIO.read(getClass().getResourceAsStream("/tiles/sand.png"));
+			
 			
 		}catch(IOException e) {
 			e.printStackTrace();
@@ -56,7 +73,7 @@ public class TileManager {
 	 * */
 	public void loadMap() {
 		try {
-			InputStream is = getClass().getResourceAsStream("/maps/map.txt");
+			InputStream is = getClass().getResourceAsStream("/maps/worldmap.txt");
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			
 			int col = 0;
@@ -81,6 +98,9 @@ public class TileManager {
 				
 			}
 			br.close();
+			
+			
+			
 			
 		}catch(Exception e){
 			

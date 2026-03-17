@@ -60,7 +60,7 @@ public class GamePanel extends JPanel implements Runnable
 	{
 		gameThread = new Thread (this); //Instance thread
 		gameThread.start(); //auto call run method
-		System.out.println("Game STarted");
+		System.out.println("Game Started");
 
 	}
 

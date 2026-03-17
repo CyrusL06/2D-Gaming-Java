@@ -3,97 +3,416 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2D Adventure (Canvas Test)</title>
+  <title>2D Adventure (Browser Build)</title>
   <style>
-    :root {
-      --bg: #0a0a0a;
-      --panel: #151515;
-      --text: #f5f5f5;
-      --muted: #a3a3a3;
-      --border: #2a2a2a;
+	    :root {
+	      --bg-a: #241f2a;
+	      --bg-b: #10120d;
+	      --panel: #1b2013;
+	      --line: #5f6940;
+	      --text: #d4d9aa;
+	      --muted: #91986d;
+	      --accent: #e4d47a;
+	      --gb-body: #c6c8a8;
+	      --gb-body-dark: #a1a484;
+	      --gb-screen: #8ba55a;
+      --gb-screen-dark: #344228;
+      --gb-ink: #27311d;
+      --gb-btn: #5a4e58;
     }
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: radial-gradient(120% 120% at 20% 0%, #202020 0%, var(--bg) 55%);
-      color: var(--text);
-      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+
+		    html, body {
+		      margin: 0;
+		      min-height: 100%;
+		      background: #11140d;
+		      color: var(--text);
+		      font-family: "Lucida Console", "Courier New", monospace;
+		    }
+
+	    .shell {
+	      min-height: 100vh;
+	      display: grid;
+	      place-items: center;
+	      padding: 24px;
+	      box-sizing: border-box;
+	    }
+
+		    .frame {
+		      width: min(100%, 800px);
+		      background: var(--panel);
+		      border: 3px solid var(--line);
+		      border-radius: 6px;
+		      overflow: hidden;
+	      box-shadow: 8px 8px 0 rgba(8, 10, 5, 0.9);
+	    }
+
+	    .head {
+	      display: flex;
+	      align-items: center;
+	      justify-content: space-between;
+	      gap: 12px;
+	      padding: 10px 14px;
+	      border-bottom: 3px solid var(--line);
+	      background: #15190f;
+	      font-size: 12px;
+	      letter-spacing: 0.8px;
+	      text-transform: uppercase;
+	    }
+
+	    .head strong {
+	      color: var(--accent);
+	      font-size: 13px;
+	    }
+
+	    .status {
+	      color: var(--muted);
+	      text-align: right;
+	    }
+
+	    .screen-wrap {
+	      position: relative;
+	      width: min(100%, 796px);
+	      margin: 0 auto;
+	      padding: 14px;
+	      box-sizing: border-box;
+	      background: #7e8f49;
+	      border-top: 3px solid #515a35;
+	      border-bottom: 3px solid #515a35;
+	    }
+
+	    .screen-wrap::after {
+	      content: "";
+	      position: absolute;
+	      inset: 14px;
+	      pointer-events: none;
+	      background: repeating-linear-gradient(
+	        to bottom,
+	        rgba(20, 28, 11, 0.08) 0px,
+	        rgba(20, 28, 11, 0.08) 2px,
+	        transparent 2px,
+	        transparent 4px
+	      );
+	    }
+
+	    canvas {
+	      display: block;
+	      width: 100%;
+	      height: 576px;
+	      image-rendering: pixelated;
+	      image-rendering: crisp-edges;
+	      background: #1c240f;
+	      border: 3px solid #283213;
+	      margin: 0 auto;
+	      box-sizing: border-box;
+	    }
+
+	    .foot {
+	      border-top: 3px solid var(--line);
+	      background: #15190f;
+	      color: var(--muted);
+	      font-size: 12px;
+	      letter-spacing: 0.8px;
+	      text-transform: uppercase;
+	      padding: 9px 14px 10px;
+	    }
+
+    .mobile-controls {
+      display: none;
     }
-    .layout {
-      min-height: 100%;
-      display: grid;
-      place-items: center;
-      padding: 16px;
-      box-sizing: border-box;
+
+    .dpad-btn,
+    .action-btn {
+      border: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      outline: none;
     }
-    .panel {
-      width: min(100%, 1100px);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #1b1b1b 0%, var(--panel) 100%);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-      overflow: hidden;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
-    }
-    .header strong {
-      letter-spacing: 0.4px;
-    }
-    .header span {
-      color: var(--muted);
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: auto;
-      background: #000;
-      image-rendering: pixelated;
-    }
-    .hint {
-      padding: 8px 14px 12px;
-      color: var(--muted);
-      font-size: 12px;
-      border-top: 1px solid var(--border);
+
+    @media (max-width: 900px) {
+      body.mobile-gb {
+        background:
+          radial-gradient(circle at 20% 0%, #dde2c4 0%, transparent 45%),
+          linear-gradient(170deg, #b7bc9e, #8f9479);
+        color: var(--gb-ink);
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      }
+
+      body.mobile-gb .shell {
+        padding: 12px;
+      }
+
+      body.mobile-gb .frame {
+        width: min(100%, 430px);
+        background: linear-gradient(180deg, #d4d8b5 0%, var(--gb-body) 72%, var(--gb-body-dark) 100%);
+        border: 2px solid #7d8166;
+        border-radius: 26px;
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.25),
+          inset 0 2px 0 rgba(255, 255, 255, 0.45);
+      }
+
+      body.mobile-gb .head {
+        border-bottom: 1px solid rgba(40, 50, 31, 0.25);
+        background: transparent;
+        color: var(--gb-ink);
+        font-size: 12px;
+        letter-spacing: 0.2px;
+        text-transform: none;
+      }
+
+      body.mobile-gb .head strong {
+        color: #3e4d2f;
+        font-size: 14px;
+      }
+
+      body.mobile-gb .status {
+        color: #4d5f3a;
+      }
+
+      body.mobile-gb .screen-wrap {
+        width: 100%;
+        max-width: 388px;
+        padding: 12px 12px 10px;
+        box-sizing: border-box;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #aeb896 0%, var(--gb-screen) 100%);
+        border: 2px solid #6f7657;
+      }
+
+      body.mobile-gb .screen-wrap::after {
+        content: "";
+        position: absolute;
+        inset: 12px 12px 10px;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(36, 50, 26, 0.06) 0px,
+          rgba(36, 50, 26, 0.06) 2px,
+          rgba(0, 0, 0, 0) 2px,
+          rgba(0, 0, 0, 0) 4px
+        );
+        mix-blend-mode: multiply;
+      }
+
+      body.mobile-gb canvas {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        background: #000;
+        border: 2px solid var(--gb-screen-dark);
+        box-sizing: border-box;
+        filter: grayscale(1) contrast(1.12) brightness(0.9) sepia(0.5) hue-rotate(30deg) saturate(2.1);
+      }
+
+      body.mobile-gb .foot {
+        border-top: 1px solid rgba(40, 50, 31, 0.25);
+        background: transparent;
+        color: #445335;
+        letter-spacing: 0;
+        text-transform: none;
+        padding: 8px 14px 11px;
+      }
+
+      body.mobile-gb .mobile-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 12px 14px 18px;
+        gap: 18px;
+      }
+
+      body.mobile-gb .dpad {
+        position: relative;
+        width: 124px;
+        height: 124px;
+        isolation: isolate;
+      }
+
+      body.mobile-gb .dpad::before {
+        content: "";
+        position: absolute;
+        left: 44px;
+        top: 44px;
+        width: 36px;
+        height: 36px;
+        border-radius: 7px;
+        background: linear-gradient(180deg, #3f3e43 0%, #252429 100%);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+        z-index: 0;
+      }
+
+      body.mobile-gb .dpad-btn {
+        position: absolute;
+        background: linear-gradient(180deg, #424145 0%, #27262a 100%);
+        border: 2px solid #171619;
+        border-radius: 8px;
+        color: #e9e9e9;
+        font-size: 0;
+        z-index: 1;
+      }
+
+      body.mobile-gb .dpad-btn::before {
+        content: "";
+        display: block;
+        width: 0;
+        height: 0;
+        margin: auto;
+        border-style: solid;
+      }
+
+      body.mobile-gb .dpad-btn.up {
+        left: 38px;
+        top: 0;
+        width: 48px;
+        height: 48px;
+      }
+
+      body.mobile-gb .dpad-btn.up::before {
+        border-width: 0 9px 12px 9px;
+        border-color: transparent transparent #d8d8d8 transparent;
+      }
+
+      body.mobile-gb .dpad-btn.down {
+        left: 38px;
+        bottom: 0;
+        width: 48px;
+        height: 48px;
+      }
+
+      body.mobile-gb .dpad-btn.down::before {
+        border-width: 12px 9px 0 9px;
+        border-color: #d8d8d8 transparent transparent transparent;
+      }
+
+      body.mobile-gb .dpad-btn.left {
+        left: 0;
+        top: 38px;
+        width: 48px;
+        height: 48px;
+      }
+
+      body.mobile-gb .dpad-btn.left::before {
+        border-width: 9px 12px 9px 0;
+        border-color: transparent #d8d8d8 transparent transparent;
+      }
+
+      body.mobile-gb .dpad-btn.right {
+        right: 0;
+        top: 38px;
+        width: 48px;
+        height: 48px;
+      }
+
+      body.mobile-gb .dpad-btn.right::before {
+        border-width: 9px 0 9px 12px;
+        border-color: transparent transparent transparent #d8d8d8;
+      }
+
+      body.mobile-gb .dpad-btn:active,
+      body.mobile-gb .dpad-btn.is-down {
+        transform: translateY(1px);
+        filter: brightness(1.18);
+      }
+
+      body.mobile-gb .ab {
+        display: flex;
+        gap: 12px;
+        padding-bottom: 6px;
+      }
+
+      body.mobile-gb .action-btn {
+        width: 54px;
+        height: 54px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 32% 28%, #857286 0%, var(--gb-btn) 55%, #433a44 100%);
+        color: #f3f2f3;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        border: 2px solid #392f3a;
+        font-size: 18px;
+      }
+
+      body.mobile-gb .action-btn:active,
+      body.mobile-gb .action-btn.is-down {
+        transform: translateY(2px);
+        filter: brightness(1.08);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="layout">
-    <main class="panel">
-      <div class="header">
-        <strong>2D Adventure (Browser Test)</strong>
-        <span id="status">Loading sprites...</span>
+  <div class="shell">
+    <main class="frame">
+      <div class="head">
+        <strong>2D Adventure Browser Demo</strong>
+        <div id="status" class="status">Loading map + sprites...</div>
       </div>
-      <canvas id="game" width="2048" height="1536" aria-label="Game screen"></canvas>
-      <div class="hint">Controls: W A S D</div>
+      <div class="screen-wrap">
+        <canvas id="game" aria-label="Game screen"></canvas>
+      </div>
+      <div class="mobile-controls" id="mobile-controls">
+        <div class="dpad" aria-label="Directional controls">
+          <button class="dpad-btn up" type="button" data-key="up" aria-label="Move up"></button>
+          <button class="dpad-btn left" type="button" data-key="left" aria-label="Move left"></button>
+          <button class="dpad-btn right" type="button" data-key="right" aria-label="Move right"></button>
+          <button class="dpad-btn down" type="button" data-key="down" aria-label="Move down"></button>
+        </div>
+        <div class="ab" aria-label="Action buttons">
+          <button class="action-btn" type="button" data-action="b" aria-label="B button">B</button>
+          <button class="action-btn" type="button" data-action="a" aria-label="A button">A</button>
+        </div>
+      </div>
+      <div class="foot">Controls: W A S D</div>
     </main>
   </div>
 
   <script type="module">
+    const mobileGameboyQuery = window.matchMedia("(max-width: 900px)");
+
+    function syncMobileGameboyMode() {
+      document.body.classList.toggle("mobile-gb", mobileGameboyQuery.matches);
+    }
+
+    syncMobileGameboyMode();
+    if (typeof mobileGameboyQuery.addEventListener === "function") {
+      mobileGameboyQuery.addEventListener("change", syncMobileGameboyMode);
+    } else if (typeof mobileGameboyQuery.addListener === "function") {
+      mobileGameboyQuery.addListener(syncMobileGameboyMode);
+    }
+    window.addEventListener("resize", syncMobileGameboyMode);
+
     const statusEl = document.getElementById("status");
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
 
-    const originalTileSize = 16;
-    const scale = 8;
-    const tileSize = originalTileSize * scale;
-    const maxScreenCol = 16;
-    const maxScreenRow = 12;
-
-    canvas.width = tileSize * maxScreenCol;
-    canvas.height = tileSize * maxScreenRow;
+    const ORIGINAL_TILE_SIZE = 16;
+    const SCALE = 3;
+    const TILE_SIZE = ORIGINAL_TILE_SIZE * SCALE;
+    const VIEW_COLS = 16;
+    const VIEW_ROWS = 12;
+    const FPS = 100;
+    const LOGICAL_WIDTH = TILE_SIZE * VIEW_COLS;
+    const LOGICAL_HEIGHT = TILE_SIZE * VIEW_ROWS;
+    canvas.width = LOGICAL_WIDTH;
+    canvas.height = LOGICAL_HEIGHT;
 
     const state = {
       keys: { up: false, down: false, left: false, right: false },
-      player: { x: 100, y: 100, speed: 4, direction: "down" },
+      map: Array.from({ length: VIEW_ROWS }, () => Array.from({ length: VIEW_COLS }, () => 0)),
+      tiles: {},
       sprites: {},
-      spriteReady: false,
+      player: {
+        x: 100,
+        y: 100,
+        speed: 3,
+        direction: "down",
+        spriteNum: 1,
+        spriteCounter: 0,
+      },
     };
 
     function loadImage(src) {
@@ -105,68 +424,212 @@
       });
     }
 
-    async function loadSprites() {
-      const map = {
-        up: "player/g-2.png",
-        right: "player/g-3.png",
-        left: "player/g-4.png",
-        down: "player/g-1.png",
-      };
-      const entries = await Promise.all(
-        Object.entries(map).map(async ([direction, path]) => [direction, await loadImage(path)])
-      );
-      state.sprites = Object.fromEntries(entries);
-      state.spriteReady = true;
-      statusEl.textContent = "Running";
+    function scaleToTileNearest(image) {
+      const offscreen = document.createElement("canvas");
+      offscreen.width = TILE_SIZE;
+      offscreen.height = TILE_SIZE;
+      const offCtx = offscreen.getContext("2d");
+      offCtx.imageSmoothingEnabled = false;
+      offCtx.drawImage(image, 0, 0, TILE_SIZE, TILE_SIZE);
+      return offscreen;
     }
 
-    function onKeyChange(code, pressed) {
+    async function loadMap(path) {
+      const response = await fetch(path, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Map load failed: ${response.status} ${response.statusText}`);
+      }
+      const text = await response.text();
+      return text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => line.split(/\s+/).map((value) => Number(value)));
+    }
+
+    function toJavaScreenMap(fullMap) {
+      return Array.from({ length: VIEW_ROWS }, (_, row) =>
+        Array.from({ length: VIEW_COLS }, (_, col) => {
+          const value = fullMap[row]?.[col];
+          return Number.isFinite(value) ? value : 0;
+        })
+      );
+    }
+
+    async function loadTiles() {
+      const tileSources = {
+        0: "tiles/grass01.png",
+        1: "tiles/wall.png",
+        2: "tiles/water01.png",
+        3: "tiles/earth.png",
+        4: "tiles/sand.png",
+      };
+      const loaded = await Promise.all(
+        Object.entries(tileSources).map(async ([id, path]) => {
+          const image = await loadImage(path);
+          return [Number(id), scaleToTileNearest(image)];
+        })
+      );
+      return Object.fromEntries(loaded);
+    }
+
+    async function loadSprites() {
+      const spriteSources = {
+        up1: "player2/g_21.png",
+        up2: "player2/g_22.png",
+        right1: "player2/g_31.png",
+        right2: "player2/g_32.png",
+        left1: "player2/g_42.png",
+        left2: "player2/g_41.png",
+        down1: "player2/g_12.png",
+        down2: "player2/g_1.png",
+      };
+      const loaded = await Promise.all(
+        Object.entries(spriteSources).map(async ([id, path]) => {
+          const image = await loadImage(path);
+          return [id, scaleToTileNearest(image)];
+        })
+      );
+      return Object.fromEntries(loaded);
+    }
+
+    function updateKey(code, pressed) {
       if (code === "KeyW") state.keys.up = pressed;
       if (code === "KeyS") state.keys.down = pressed;
       if (code === "KeyA") state.keys.left = pressed;
       if (code === "KeyD") state.keys.right = pressed;
     }
 
-    window.addEventListener("keydown", (e) => onKeyChange(e.code, true));
-    window.addEventListener("keyup", (e) => onKeyChange(e.code, false));
+    function handleKeyEvent(event, pressed) {
+      if (event.code === "KeyW" || event.code === "KeyA" || event.code === "KeyS" || event.code === "KeyD") {
+        event.preventDefault();
+      }
+      updateKey(event.code, pressed);
+    }
+
+    window.addEventListener("keydown", (event) => handleKeyEvent(event, true));
+    window.addEventListener("keyup", (event) => handleKeyEvent(event, false));
+
+    function bindHoldButton(element, onPress, onRelease) {
+      if (!element) return;
+      element.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        element.classList.add("is-down");
+        onPress();
+      });
+      const release = (event) => {
+        event.preventDefault();
+        element.classList.remove("is-down");
+        onRelease();
+      };
+      element.addEventListener("pointerup", release);
+      element.addEventListener("pointercancel", release);
+      element.addEventListener("pointerleave", release);
+    }
+
+    function resetKeys() {
+      state.keys.up = false;
+      state.keys.down = false;
+      state.keys.left = false;
+      state.keys.right = false;
+    }
+
+    function bindMobileControls() {
+      const controlRoot = document.getElementById("mobile-controls");
+      if (!controlRoot) return;
+
+      controlRoot.querySelectorAll("[data-key]").forEach((button) => {
+        const key = button.getAttribute("data-key");
+        bindHoldButton(
+          button,
+          () => {
+            state.keys[key] = true;
+          },
+          () => {
+            state.keys[key] = false;
+          }
+        );
+      });
+
+      controlRoot.querySelectorAll("[data-action]").forEach((button) => {
+        bindHoldButton(button, () => {}, () => {});
+      });
+
+      window.addEventListener("blur", resetKeys);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) resetKeys();
+      });
+    }
+
+    bindMobileControls();
 
     function update() {
       const p = state.player;
+      let moving = false;
+
       if (state.keys.up) {
         p.direction = "up";
         p.y -= p.speed;
+        moving = true;
       } else if (state.keys.down) {
         p.direction = "down";
         p.y += p.speed;
+        moving = true;
       } else if (state.keys.left) {
         p.direction = "left";
         p.x -= p.speed;
+        moving = true;
       } else if (state.keys.right) {
         p.direction = "right";
         p.x += p.speed;
+        moving = true;
       }
 
-      p.x = Math.max(0, Math.min(canvas.width - tileSize, p.x));
-      p.y = Math.max(0, Math.min(canvas.height - tileSize, p.y));
+      if (moving) {
+        p.spriteCounter += 1;
+        if (p.spriteCounter > 15) {
+          p.spriteNum = p.spriteNum === 1 ? 2 : 1;
+          p.spriteCounter = 0;
+        }
+      }
+    }
+
+    function drawMap() {
+      const tileFallback = state.tiles[0];
+      for (let row = 0; row < VIEW_ROWS; row += 1) {
+        for (let col = 0; col < VIEW_COLS; col += 1) {
+          const tileId = state.map[row][col];
+          const image = state.tiles[tileId] || tileFallback;
+          const x = col * TILE_SIZE;
+          const y = row * TILE_SIZE;
+          if (image) ctx.drawImage(image, x, y);
+        }
+      }
+    }
+
+    function drawPlayer() {
+      const p = state.player;
+      const spriteKey = `${p.direction}${p.spriteNum}`;
+      const image = state.sprites[spriteKey] || state.sprites.down1;
+      if (image) {
+        ctx.drawImage(image, p.x, p.y);
+      } else {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(p.x, p.y, TILE_SIZE, TILE_SIZE);
+      }
     }
 
     function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
       ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const p = state.player;
-      if (state.spriteReady && state.sprites[p.direction]) {
-        ctx.drawImage(state.sprites[p.direction], p.x, p.y, tileSize, tileSize);
-      } else {
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(p.x, p.y, tileSize, tileSize);
-      }
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      drawMap();
+      drawPlayer();
     }
 
     let previous = performance.now();
     let accumulator = 0;
-    const step = 1000 / 100;
+    const step = 1000 / FPS;
 
     function loop(now) {
       const frame = Math.min(100, now - previous);
@@ -182,12 +645,27 @@
       requestAnimationFrame(loop);
     }
 
-    loadSprites()
-      .catch((error) => {
+    async function boot() {
+      try {
+        statusEl.textContent = "Loading Java-parity map + sprites (crisp-v2)...";
+        const [tiles, sprites, fullMap] = await Promise.all([
+          loadTiles(),
+          loadSprites(),
+          loadMap("maps/worldmap.txt"),
+        ]);
+        state.tiles = tiles;
+        state.sprites = sprites;
+        state.map = toJavaScreenMap(fullMap);
+        statusEl.textContent = "Running (no camera, crisp-v2)";
+      } catch (error) {
         console.error(error);
-        statusEl.textContent = "Sprite load failed (using fallback rectangle)";
-      })
-      .finally(() => requestAnimationFrame(loop));
+        statusEl.textContent = "Load failed. Check console + file paths.";
+      } finally {
+        requestAnimationFrame(loop);
+      }
+    }
+
+    boot();
   </script>
 </body>
 </html>
