@@ -392,26 +392,31 @@
     const ORIGINAL_TILE_SIZE = 16;
     const SCALE = 3;
     const TILE_SIZE = ORIGINAL_TILE_SIZE * SCALE;
-    const VIEW_COLS = 16;
-    const VIEW_ROWS = 12;
+    const MAX_SCREEN_COL = 16;
+    const MAX_SCREEN_ROW = 12;
+    const MAX_WORLD_COL = 48;
+    const MAX_WORLD_ROW = 48;
     const FPS = 100;
-    const LOGICAL_WIDTH = TILE_SIZE * VIEW_COLS;
-    const LOGICAL_HEIGHT = TILE_SIZE * VIEW_ROWS;
-    canvas.width = LOGICAL_WIDTH;
-    canvas.height = LOGICAL_HEIGHT;
+    const SCREEN_WIDTH = TILE_SIZE * MAX_SCREEN_COL;
+    const SCREEN_HEIGHT = TILE_SIZE * MAX_SCREEN_ROW;
+
+    canvas.width = SCREEN_WIDTH;
+    canvas.height = SCREEN_HEIGHT;
 
     const state = {
       keys: { up: false, down: false, left: false, right: false },
-      map: Array.from({ length: VIEW_ROWS }, () => Array.from({ length: VIEW_COLS }, () => 0)),
+      map: Array.from({ length: MAX_WORLD_ROW }, () => Array.from({ length: MAX_WORLD_COL }, () => 0)),
       tiles: {},
       sprites: {},
       player: {
-        x: 100,
-        y: 100,
+        worldX: TILE_SIZE * 23,
+        worldY: TILE_SIZE * 21,
+        screenX: SCREEN_WIDTH / 2 - TILE_SIZE / 2,
+        screenY: SCREEN_HEIGHT / 2 - TILE_SIZE / 2,
         speed: 3,
         direction: "down",
-        spriteNum: 1,
         spriteCounter: 0,
+        spriteNum: 1,
       },
     };
 
@@ -434,26 +439,30 @@
       return offscreen;
     }
 
-    async function loadMap(path) {
+    async function loadJavaWorldMap(path) {
       const response = await fetch(path, { cache: "no-store" });
       if (!response.ok) {
         throw new Error(`Map load failed: ${response.status} ${response.statusText}`);
       }
-      const text = await response.text();
-      return text
+
+      const rows = (await response.text())
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean)
-        .map((line) => line.split(/\s+/).map((value) => Number(value)));
-    }
+        .slice(0, MAX_WORLD_ROW);
 
-    function toJavaScreenMap(fullMap) {
-      return Array.from({ length: VIEW_ROWS }, (_, row) =>
-        Array.from({ length: VIEW_COLS }, (_, col) => {
-          const value = fullMap[row]?.[col];
-          return Number.isFinite(value) ? value : 0;
-        })
-      );
+      const map = Array.from({ length: MAX_WORLD_ROW }, () => Array.from({ length: MAX_WORLD_COL }, () => 0));
+      rows.forEach((line, row) => {
+        line
+          .split(/\s+/)
+          .slice(0, MAX_WORLD_COL)
+          .forEach((value, col) => {
+            const tileId = Number(value);
+            map[row][col] = Number.isFinite(tileId) ? tileId : 0;
+          });
+      });
+
+      return map;
     }
 
     async function loadTiles() {
@@ -462,7 +471,8 @@
         1: "tiles/wall.png",
         2: "tiles/water01.png",
         3: "tiles/earth.png",
-        4: "tiles/sand.png",
+        4: "tiles/tree.png",
+        5: "tiles/sand.png",
       };
       const loaded = await Promise.all(
         Object.entries(tileSources).map(async ([id, path]) => {
@@ -564,65 +574,79 @@
     bindMobileControls();
 
     function update() {
-      const p = state.player;
+      const player = state.player;
       let moving = false;
 
       if (state.keys.up) {
-        p.direction = "up";
-        p.y -= p.speed;
+        player.direction = "up";
+        player.worldY -= player.speed;
         moving = true;
       } else if (state.keys.down) {
-        p.direction = "down";
-        p.y += p.speed;
+        player.direction = "down";
+        player.worldY += player.speed;
         moving = true;
       } else if (state.keys.left) {
-        p.direction = "left";
-        p.x -= p.speed;
+        player.direction = "left";
+        player.worldX -= player.speed;
         moving = true;
       } else if (state.keys.right) {
-        p.direction = "right";
-        p.x += p.speed;
+        player.direction = "right";
+        player.worldX += player.speed;
         moving = true;
       }
 
       if (moving) {
-        p.spriteCounter += 1;
-        if (p.spriteCounter > 15) {
-          p.spriteNum = p.spriteNum === 1 ? 2 : 1;
-          p.spriteCounter = 0;
+        player.spriteCounter += 1;
+        if (player.spriteCounter > 15) {
+          player.spriteNum = player.spriteNum === 1 ? 2 : 1;
+          player.spriteCounter = 0;
         }
       }
     }
 
     function drawMap() {
+      const player = state.player;
       const tileFallback = state.tiles[0];
-      for (let row = 0; row < VIEW_ROWS; row += 1) {
-        for (let col = 0; col < VIEW_COLS; col += 1) {
-          const tileId = state.map[row][col];
+
+      for (let worldRow = 0; worldRow < MAX_WORLD_ROW; worldRow += 1) {
+        for (let worldCol = 0; worldCol < MAX_WORLD_COL; worldCol += 1) {
+          const tileId = state.map[worldRow]?.[worldCol] ?? 0;
           const image = state.tiles[tileId] || tileFallback;
-          const x = col * TILE_SIZE;
-          const y = row * TILE_SIZE;
-          if (image) ctx.drawImage(image, x, y);
+          const worldX = worldCol * TILE_SIZE;
+          const worldY = worldRow * TILE_SIZE;
+          const screenX = worldX - player.worldX + player.screenX;
+          const screenY = worldY - player.worldY + player.screenY;
+
+          // Mirror Java's visibility culling so the browser draw cost stays aligned.
+          const visible =
+            worldX + TILE_SIZE > player.worldX - player.screenX &&
+            worldX - TILE_SIZE < player.worldX + player.screenX &&
+            worldY + TILE_SIZE > player.worldY - player.screenY &&
+            worldY - TILE_SIZE < player.worldY + player.screenY;
+
+          if (visible && image) {
+            ctx.drawImage(image, screenX, screenY);
+          }
         }
       }
     }
 
     function drawPlayer() {
-      const p = state.player;
-      const spriteKey = `${p.direction}${p.spriteNum}`;
+      const player = state.player;
+      const spriteKey = `${player.direction}${player.spriteNum}`;
       const image = state.sprites[spriteKey] || state.sprites.down1;
       if (image) {
-        ctx.drawImage(image, p.x, p.y);
+        ctx.drawImage(image, player.screenX, player.screenY);
       } else {
         ctx.fillStyle = "#fff";
-        ctx.fillRect(p.x, p.y, TILE_SIZE, TILE_SIZE);
+        ctx.fillRect(player.screenX, player.screenY, TILE_SIZE, TILE_SIZE);
       }
     }
 
     function draw() {
-      ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
       ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
       drawMap();
       drawPlayer();
     }
@@ -647,16 +671,16 @@
 
     async function boot() {
       try {
-        statusEl.textContent = "Loading Java-parity map + sprites (crisp-v2)...";
-        const [tiles, sprites, fullMap] = await Promise.all([
+        statusEl.textContent = "Loading Java parity...";
+        const [tiles, sprites, map] = await Promise.all([
           loadTiles(),
           loadSprites(),
-          loadMap("maps/worldmap.txt"),
+          loadJavaWorldMap("maps/worldmap.txt"),
         ]);
         state.tiles = tiles;
         state.sprites = sprites;
-        state.map = toJavaScreenMap(fullMap);
-        statusEl.textContent = "Running (no camera, crisp-v2)";
+        state.map = map;
+        statusEl.textContent = "Running (java parity)";
       } catch (error) {
         console.error(error);
         statusEl.textContent = "Load failed. Check console + file paths.";
