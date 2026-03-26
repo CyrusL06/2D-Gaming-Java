@@ -6,44 +6,45 @@
   <title>2D Adventure (Browser Build)</title>
   <style>
 	    :root {
-	      --bg-a: #241f2a;
-	      --bg-b: #10120d;
-	      --panel: #1b2013;
-	      --line: #5f6940;
-	      --text: #d4d9aa;
-	      --muted: #91986d;
-	      --accent: #e4d47a;
 	      --gb-body: #c6c8a8;
 	      --gb-body-dark: #a1a484;
+	      --gb-body-light: #dde1c2;
 	      --gb-screen: #8ba55a;
-      --gb-screen-dark: #344228;
-      --gb-ink: #27311d;
-      --gb-btn: #5a4e58;
-    }
+	      --gb-screen-dark: #344228;
+	      --gb-ink: #27311d;
+	      --gb-ink-soft: #4d5f3a;
+	      --gb-btn: #5a4e58;
+	      --gb-chrome: #6f7657;
+	      --gb-shadow: rgba(55, 60, 43, 0.5);
+      }
 
-		    html, body {
-		      margin: 0;
-		      min-height: 100%;
-		      background: #11140d;
-		      color: var(--text);
-		      font-family: "Lucida Console", "Courier New", monospace;
-		    }
+	    html, body {
+	      margin: 0;
+	      min-height: 100%;
+	      background:
+	        radial-gradient(circle at 20% 0%, #dde2c4 0%, transparent 32%),
+	        linear-gradient(170deg, #b7bc9e, #8f9479);
+	      color: var(--gb-ink);
+	      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+	    }
 
 	    .shell {
 	      min-height: 100vh;
 	      display: grid;
 	      place-items: center;
-	      padding: 24px;
+	      padding: 24px 18px;
 	      box-sizing: border-box;
 	    }
 
-		    .frame {
-		      width: min(100%, 800px);
-		      background: var(--panel);
-		      border: 3px solid var(--line);
-		      border-radius: 6px;
-		      overflow: hidden;
-	      box-shadow: 8px 8px 0 rgba(8, 10, 5, 0.9);
+	    .frame {
+	      width: min(100%, 660px);
+	      background: linear-gradient(180deg, #d4d8b5 0%, var(--gb-body) 72%, var(--gb-body-dark) 100%);
+	      border: 2px solid #7d8166;
+	      border-radius: 28px 28px 82px 28px;
+	      overflow: hidden;
+	      box-shadow:
+	        0 20px 40px rgba(0, 0, 0, 0.25),
+	        inset 0 2px 0 rgba(255, 255, 255, 0.45);
 	    }
 
 	    .head {
@@ -51,69 +52,114 @@
 	      align-items: center;
 	      justify-content: space-between;
 	      gap: 12px;
-	      padding: 10px 14px;
-	      border-bottom: 3px solid var(--line);
-	      background: #15190f;
+	      padding: 14px 18px 12px;
+	      border-bottom: 1px solid rgba(40, 50, 31, 0.25);
+	      background: transparent;
+	      color: var(--gb-ink);
 	      font-size: 12px;
-	      letter-spacing: 0.8px;
-	      text-transform: uppercase;
+	      letter-spacing: 0.2px;
+	      text-transform: none;
 	    }
 
 	    .head strong {
-	      color: var(--accent);
-	      font-size: 13px;
+	      color: #3e4d2f;
+	      font-size: 15px;
+	      letter-spacing: 0.2px;
+	      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+	      text-transform: none;
 	    }
 
 	    .status {
-	      color: var(--muted);
+	      color: var(--gb-ink-soft);
 	      text-align: right;
+	      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+	      letter-spacing: 0.2px;
+	      text-transform: none;
 	    }
 
 	    .screen-wrap {
 	      position: relative;
-	      width: min(100%, 796px);
+	      width: min(100%, 568px);
+	      max-width: 568px;
 	      margin: 0 auto;
-	      padding: 14px;
+	      padding: 40px 14px 14px;
 	      box-sizing: border-box;
-	      background: #7e8f49;
-	      border-top: 3px solid #515a35;
-	      border-bottom: 3px solid #515a35;
+	      background: linear-gradient(180deg, #aeb896 0%, var(--gb-screen) 100%);
+	      border: 2px solid #6f7657;
+	      border-radius: 14px;
+	      box-shadow:
+	        inset 0 2px 0 rgba(255, 255, 255, 0.25),
+	        inset 0 -2px 0 rgba(49, 60, 38, 0.18);
+	    }
+
+	    .screen-wrap::before {
+	      content: "DOT MATRIX WITH STEREO SOUND";
+	      position: absolute;
+	      left: 18px;
+	      top: 12px;
+	      color: rgba(44, 58, 31, 0.72);
+	      font-size: 10px;
+	      letter-spacing: 0.9px;
+	      text-transform: uppercase;
+	      font-family: "Courier New", monospace;
 	    }
 
 	    .screen-wrap::after {
 	      content: "";
 	      position: absolute;
-	      inset: 14px;
+	      inset: 40px 14px 14px;
 	      pointer-events: none;
 	      background: repeating-linear-gradient(
 	        to bottom,
-	        rgba(20, 28, 11, 0.08) 0px,
-	        rgba(20, 28, 11, 0.08) 2px,
+	        rgba(36, 50, 26, 0.06) 0px,
+	        rgba(36, 50, 26, 0.06) 2px,
 	        transparent 2px,
 	        transparent 4px
 	      );
+	      mix-blend-mode: multiply;
 	    }
 
 	    canvas {
 	      display: block;
-	      width: 100%;
-	      height: 576px;
+	      width: 512px;
+	      max-width: 100%;
+	      height: auto;
+	      aspect-ratio: 4 / 3;
 	      image-rendering: pixelated;
 	      image-rendering: crisp-edges;
-	      background: #1c240f;
-	      border: 3px solid #283213;
+	      background: #000;
+	      border: 2px solid var(--gb-screen-dark);
+	      border-radius: 4px;
 	      margin: 0 auto;
 	      box-sizing: border-box;
+	      filter: grayscale(1) contrast(1.12) brightness(0.9) sepia(0.5) hue-rotate(30deg) saturate(2.1);
 	    }
 
 	    .foot {
-	      border-top: 3px solid var(--line);
-	      background: #15190f;
-	      color: var(--muted);
+	      display: block;
+	      border-top: 1px solid rgba(40, 50, 31, 0.25);
+	      background: transparent;
+	      color: #445335;
 	      font-size: 12px;
-	      letter-spacing: 0.8px;
-	      text-transform: uppercase;
-	      padding: 9px 14px 10px;
+	      letter-spacing: 0;
+	      text-transform: none;
+	      padding: 12px 18px 18px;
+	    }
+
+	    .foot span {
+	      display: block;
+	    }
+
+	    .foot span:first-child {
+	      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+	      font-weight: 600;
+	      letter-spacing: 0;
+	      text-transform: none;
+	    }
+
+	    .foot span:last-child {
+	      margin-top: 4px;
+	      color: var(--gb-ink-soft);
 	    }
 
     .mobile-controls {
@@ -161,13 +207,19 @@
         text-transform: none;
       }
 
-      body.mobile-gb .head strong {
-        color: #3e4d2f;
-        font-size: 14px;
+	      body.mobile-gb .head strong {
+	        color: #3e4d2f;
+	        font-size: 14px;
+	        letter-spacing: 0.2px;
+	        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        text-transform: none;
       }
 
       body.mobile-gb .status {
         color: #4d5f3a;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        letter-spacing: 0.2px;
+        text-transform: none;
       }
 
       body.mobile-gb .screen-wrap {
@@ -178,6 +230,10 @@
         border-radius: 12px;
         background: linear-gradient(180deg, #aeb896 0%, var(--gb-screen) 100%);
         border: 2px solid #6f7657;
+      }
+
+      body.mobile-gb .screen-wrap::before {
+        display: none;
       }
 
       body.mobile-gb .screen-wrap::after {
@@ -206,6 +262,7 @@
       }
 
       body.mobile-gb .foot {
+        display: block;
         border-top: 1px solid rgba(40, 50, 31, 0.25);
         background: transparent;
         color: #445335;
@@ -213,6 +270,21 @@
         text-transform: none;
         padding: 8px 14px 11px;
       }
+
+      body.mobile-gb .foot span {
+        display: block;
+      }
+
+      body.mobile-gb .foot span:first-child {
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+	      body.mobile-gb .foot span:last-child {
+	        display: none;
+	      }
 
       body.mobile-gb .mobile-controls {
         display: flex;
@@ -365,7 +437,10 @@
           <button class="action-btn" type="button" data-action="a" aria-label="A button">A</button>
         </div>
       </div>
-      <div class="foot"></div>
+      <div class="foot">
+        <span>2D Adventure Pocket Edition</span>
+        <span>Desktop: W A S D</span>
+      </div>
     </main>
   </div>
 
