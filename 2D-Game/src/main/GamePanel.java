@@ -33,13 +33,19 @@ public class GamePanel extends JPanel implements Runnable
 	//FPS
 	int FPS = 100;
 	
+	//WORLD SETTINGS
+	public final int maxWorldCol = 48;
+	public final int maxWorldRow = 48;
+	public final int worldWidth = tileSize * maxWorldCol;
+	public final int worldHeight = tileSize * maxWorldRow;
+	
 	//In order to create animation in our game
 	//We need time to run in the game as real life "game clock"
 	//thus use thread
 	
 	KeyHandler keyH = new KeyHandler();
 	Thread gameThread; //implement runnable on top 
-	Player player = new Player(this,keyH);
+	public Player player = new Player(this,keyH);
 	
 	TileManager tileM = new TileManager(this); //Instantiate Tiles
 	
